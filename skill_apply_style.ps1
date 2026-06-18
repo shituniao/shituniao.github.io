@@ -34,8 +34,8 @@ $original = $content
 $content = $content -replace 'body\{font-family:arial;margin:0;padding:none\}',
     'body{font-family:arial;margin:0;padding:none;background-color:#111111;color:#fff}'
 
-# 1a2. Hide scrollbar on textarea
-$content = $content.Replace('</style>', '#output::-webkit-scrollbar{display:none}#output{-ms-overflow-style:none;scrollbar-width:none}</style>')
+# 1a2. Hide scrollbar on textarea, hide spinner and status
+$content = $content.Replace('</style>', '.spinner{display:none}#status{display:none}#output::-webkit-scrollbar{display:none}#output{-ms-overflow-style:none;scrollbar-width:none}</style>')
 
 # 1b. div.emscripten: add background color
 $content = $content -replace 'div\.emscripten\{text-align:center\}',
