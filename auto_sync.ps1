@@ -23,8 +23,9 @@ Write-Output "Found $($folders.Count) app folders."
 # 2. Helper: convert CamelCase to spaced words
 # ============================================================
 function Convert-CamelToTitle($name) {
-    $result = $name -creplace '([A-Z])', ' $1'
-    $result = $result.TrimStart()
+    # Insert space between lowercase->uppercase and uppercase->lowercase transitions
+    $result = $name -creplace '([a-z])([A-Z])', '$1 $2'
+    $result = $result -creplace '([A-Z])([A-Z][a-z])', '$1 $2'
     return $result
 }
 
