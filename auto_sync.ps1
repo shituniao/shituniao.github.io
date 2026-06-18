@@ -134,6 +134,8 @@ if ($status) {
     $commitTime = $beijingTime.ToString("yyyy-MM-dd HH:mm")
     git commit -m "auto sync: $commitTime"
     Write-Output "Commit done."
+    git push
+    Write-Output "Push done."
 } else {
     Write-Output "Nothing to commit."
 }
