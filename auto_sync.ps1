@@ -23,30 +23,23 @@ Write-Output "Found $($folders.Count) app folders."
 # 2. Helper: convert CamelCase to spaced words
 # ============================================================
 function Convert-CamelToTitle($name) {
-    # Insert space before each uppercase letter (except first char)
     $result = $name -creplace '([A-Z])', ' $1'
     $result = $result.TrimStart()
-    # Remove leading space before the first word
     return $result
 }
 
 # ============================================================
 # 3. Generate title from folder name
 # ============================================================
-# Format: {type}{number}_{CamelCaseName}
-# Output: {Capitalized Type} {number} — {Spaced Name}
 function Get-TitleFromFolder($folderName) {
     if ($folderName -match '^(demo|sandbox)(\d+)_(.+)$') {
         $type = $Matches[1]
         $num = $Matches[2]
         $name = $Matches[3]
-
         $capType = $type.Substring(0,1).ToUpper() + $type.Substring(1)
         $spacedName = Convert-CamelToTitle $name
-
-        return "$capType $num — $spacedName"
+        return "$capType $num $([char]0x2014) $spacedName"
     }
-    # Fallback: use folder name as-is
     return $folderName
 }
 
@@ -57,7 +50,6 @@ $updatedCount = 0
 
 foreach ($folder in $folders) {
     $folderName = $folder.Name
-    # Find HTML file inside folder
     $htmlFiles = Get-ChildItem -LiteralPath $folder.FullName -Filter "*.html" -File
     if ($htmlFiles.Count -eq 0) {
         Write-Output "SKIP: $folderName (no HTML file)"
@@ -68,24 +60,28 @@ foreach ($folder in $folders) {
     $title = Get-TitleFromFolder $folderName
     $content = [System.IO.File]::ReadAllText($htmlPath)
 
-    # Replace TITLE_PLACEHOLDER or match existing title div content
+    $fixed = $false
     if ($content -match 'TITLE_PLACEHOLDER') {
         $content = $content.Replace('TITLE_PLACEHOLDER', $title)
-        [System.IO.File]::WriteAllText($htmlPath, $content)
-        Write-Output "OK: $folderName -> $title (placeholder replaced)"
-        $updatedCount++
-    } elseif ($content -match 'padding-bottom:4px">([^<]+)</div>') {
-        $oldTitle = $Matches[1]
-        if ($oldTitle -ne $title) {
-            $content = $content -replace ([regex]::Escape($oldTitle)), $title
-            [System.IO.File]::WriteAllText($htmlPath, $content)
-            Write-Output "OK: $folderName -> $title (was: $oldTitle)"
-            $updatedCount++
-        } else {
-            Write-Output "SKIP: $folderName (title unchanged)"
-        }
+        $fixed = $true
     } else {
-        Write-Output "WARN: $folderName (no title div found)"
+        # Try to match the title div content (with or without style quotes)
+        if ($content -match 'padding-bottom:4px[^>]*>([^<]+)</div>') {
+            $oldTitle = $Matches[1]
+            if ($oldTitle -ne $title) {
+                $oldTitleEscaped = [regex]::Escape($oldTitle)
+                $content = $content -replace $oldTitleEscaped, $title
+                $fixed = $true
+            }
+        }
+    }
+
+    if ($fixed) {
+        [System.IO.File]::WriteAllText($htmlPath, $content)
+        Write-Output "OK: $folderName -> $title"
+        $updatedCount++
+    } else {
+        Write-Output "SKIP: $folderName (title unchanged or not found)"
     }
 }
 
@@ -96,20 +92,30 @@ $indexPath = Join-Path $PWD "index.html"
 if (Test-Path -LiteralPath $indexPath) {
     $indexContent = [System.IO.File]::ReadAllText($indexPath)
     $beijingTime = (Get-Date).ToUniversalTime().AddHours(8)
-    $timestamp = $beijingTime.ToString("yyyy-MM-dd HH:mm")
-    $newLine = "最后更新：$timestamp (北京时间)"
+    $timestampStr = $beijingTime.ToString("yyyy-MM-dd HH:mm")
+    $newLine = "$([char]0x6700)$([char]0x540E)$([char]0x66F4)$([char]0x65B0)$([char]0xFF1A)$timestampStr ($([char]0x5317)$([char]0x4EAC)$([char]0x65F6)$([char]0x95F4))"
 
-    if ($indexContent -match '最后更新：[^<]+') {
-        $oldLine = $Matches[0]
-        if ($oldLine -ne $newLine) {
-            $indexContent = $indexContent.Replace($oldLine, $newLine)
-            [System.IO.File]::WriteAllText($indexPath, $indexContent)
-            Write-Output "Index timestamp updated: $timestamp"
+    # Search for the timestamp pattern: digits and surrounding context
+    if ($indexContent -match '(\d{4}-\d{2}-\d{2} \d{2}:\d{2})') {
+        $oldTimestamp = $Matches[1]
+        $oldLineStart = $indexContent.LastIndexOf($([char]0x6700), $indexContent.IndexOf($oldTimestamp))
+        if ($oldLineStart -ge 0) {
+            $oldLineEnd = $indexContent.IndexOf('<', $oldLineStart)
+            if ($oldLineEnd -lt 0) { $oldLineEnd = $indexContent.Length }
+            $oldLine = $indexContent.Substring($oldLineStart, $oldLineEnd - $oldLineStart)
+
+            if ($oldTimestamp -ne $timestampStr) {
+                $indexContent = $indexContent.Replace($oldLine, $newLine)
+                [System.IO.File]::WriteAllText($indexPath, $indexContent)
+                Write-Output "Index timestamp updated: $timestampStr"
+            } else {
+                Write-Output "Index timestamp unchanged: $timestampStr"
+            }
         } else {
-            Write-Output "Index timestamp unchanged: $timestamp"
+            Write-Output "WARN: timestamp context not found"
         }
     } else {
-        Write-Output "WARN: timestamp line not found in index.html"
+        Write-Output "WARN: timestamp pattern not found in index.html"
     }
 } else {
     Write-Output "WARN: index.html not found"
@@ -121,8 +127,9 @@ if (Test-Path -LiteralPath $indexPath) {
 Write-Output ""
 Write-Output "=== Git Commit ==="
 git add -A
-$timestamp = $beijingTime.ToString("yyyy-MM-dd HH:mm")
-git commit -m "auto sync: $timestamp"
+$beijingTime = (Get-Date).ToUniversalTime().AddHours(8)
+$commitTime = $beijingTime.ToString("yyyy-MM-dd HH:mm")
+git commit -m "auto sync: $commitTime"
 Write-Output "Commit done."
 
 Write-Output ""
