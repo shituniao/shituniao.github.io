@@ -123,15 +123,20 @@ if (Test-Path -LiteralPath $indexPath) {
 }
 
 # ============================================================
-# 6. Git commit
+# 6. Git commit (skip if nothing changed)
 # ============================================================
 Write-Output ""
 Write-Output "=== Git Commit ==="
-git add -A
-$beijingTime = (Get-Date).ToUniversalTime().AddHours(8)
-$commitTime = $beijingTime.ToString("yyyy-MM-dd HH:mm")
-git commit -m "auto sync: $commitTime"
-Write-Output "Commit done."
+git add -A 2>$null
+$status = git status --porcelain
+if ($status) {
+    $beijingTime = (Get-Date).ToUniversalTime().AddHours(8)
+    $commitTime = $beijingTime.ToString("yyyy-MM-dd HH:mm")
+    git commit -m "auto sync: $commitTime"
+    Write-Output "Commit done."
+} else {
+    Write-Output "Nothing to commit."
+}
 
 Write-Output ""
 Write-Output "=== Sync Complete ==="
