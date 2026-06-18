@@ -127,7 +127,7 @@ if (Test-Path -LiteralPath $indexPath) {
 # ============================================================
 Write-Output ""
 Write-Output "=== Git Commit ==="
-git add -A 2>$null
+cmd /c "git add -A 2>nul"
 $status = git status --porcelain
 if ($status) {
     $beijingTime = (Get-Date).ToUniversalTime().AddHours(8)
