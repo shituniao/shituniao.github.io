@@ -82,7 +82,7 @@ $content = $content -replace ' rows=\d+', ''
 
 # 4b. Add auto-resize script before </body>
 $autoResizeJS = @'
-<script>window.addEventListener("DOMContentLoaded",()=>{window.addEventListener("resize",function e(){var t=document.getElementById("output");if(!t)return;var n=t.getBoundingClientRect().top,a=window.innerHeight-n-25;a>50&&(t.style.height=a+"px")}),setTimeout(()=>window.dispatchEvent(new Event("resize")),500)})</script>
+<script>window.addEventListener("DOMContentLoaded",()=>{function r(){var t=document.getElementById("output");if(!t)return;var n=t.getBoundingClientRect().top,a=window.innerHeight-n-25;a>50&&(t.style.height=a+"px")}window.addEventListener("resize",r),r();var s=document.getElementById("status");s&&(new MutationObserver(r)).observe(s,{characterData:!0,subtree:!0,childList:!0});var c=0,i=setInterval(function(){r(),++c>25&&clearInterval(i)},200)})</script>
 '@
 $content = $content.Replace('</body>', $autoResizeJS + '</body>')
 

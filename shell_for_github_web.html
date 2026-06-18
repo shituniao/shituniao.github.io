@@ -192,14 +192,28 @@
     {{{ SCRIPT }}}
     <script>
       window.addEventListener('DOMContentLoaded', () => {
-        window.addEventListener('resize', function resizeOutput() {
+        function resizeOutput() {
           var t = document.getElementById('output');
           if (!t) return;
           var top = t.getBoundingClientRect().top;
           var h = window.innerHeight - top - 25;
           if (h > 50) t.style.height = h + 'px';
-        });
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+        }
+        window.addEventListener('resize', resizeOutput);
+        resizeOutput();
+        // Watch status element for app load completion
+        var statusEl = document.getElementById('status');
+        if (statusEl) {
+          new MutationObserver(resizeOutput).observe(statusEl, {
+            characterData: true, subtree: true, childList: true
+          });
+        }
+        // Fallback: keep checking for 5 seconds
+        var count = 0;
+        var interval = setInterval(function() {
+          resizeOutput();
+          if (++count > 25) clearInterval(interval);
+        }, 200);
       });
     </script>
   </body>
