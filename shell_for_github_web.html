@@ -125,7 +125,7 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
-    <textarea id="output" rows="30"></textarea>
+    <textarea id="output"></textarea>
 
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
@@ -188,5 +188,17 @@
       };
     </script>
     {{{ SCRIPT }}}
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('resize', function resizeOutput() {
+          var t = document.getElementById('output');
+          if (!t) return;
+          var top = t.getBoundingClientRect().top;
+          var h = window.innerHeight - top - 10;
+          if (h > 50) t.style.height = h + 'px';
+        });
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+      });
+    </script>
   </body>
 </html>

@@ -71,10 +71,17 @@ $header = @"
 $content = $content -replace '(<body>)', ('$1' + $header)
 
 # ============================================================
-# 4. Textarea rows: 8 -> 30
+# 4. Remove rows attribute and add auto-resize JS
 # ============================================================
 
-$content = $content -replace 'rows=8', 'rows=30'
+# 4a. Remove any rows attribute from textarea
+$content = $content -replace ' rows=\d+', ''
+
+# 4b. Add auto-resize script before </body>
+$autoResizeJS = @'
+<script>window.addEventListener("DOMContentLoaded",()=>{window.addEventListener("resize",function e(){var t=document.getElementById("output");if(!t)return;var n=t.getBoundingClientRect().top,a=window.innerHeight-n-10;a>50&&(t.style.height=a+"px")}),setTimeout(()=>window.dispatchEvent(new Event("resize")),500)})</script>
+'@
+$content = $content.Replace('</body>', $autoResizeJS + '</body>')
 
 # ============================================================
 # 5. Save
