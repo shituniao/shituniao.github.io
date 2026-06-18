@@ -48,7 +48,7 @@ $content = $content -replace '#status\{display:inline-block;vertical-align:top;m
 
 # 1e. #output: full restyle (15px margin, #444 border, #111111 bg, auto height)
 $content = $content -replace '#output\{width:100%;height:200px;margin:0 auto;margin-top:10px;border-left:0;border-right:0px;padding-left:0;padding-right:0;display:block;background-color:#000;color:#fff;font-family:''Lucida Console'',Monaco,monospace;outline:0\}',
-    '#output{width:calc(100% - 30px);height:auto;margin:10px 15px 0 15px;border:1px solid #444;padding-left:0;padding-right:0;display:block;background-color:#111111;color:#fff;font-family:Lucida Console,Monaco,monospace;outline:0}'
+    '#output{width:100%;height:auto;margin:0;border:1px solid #444;border-top:0;padding-left:15px;padding-right:0;display:block;background-color:#111111;color:#fff;font-family:Lucida Console,Monaco,monospace;outline:0}'
 
 # ============================================================
 # 2. Body HTML modifications
