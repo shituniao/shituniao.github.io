@@ -104,6 +104,8 @@
         font-family: Lucida Console, Monaco, monospace;
         outline: 0;
       }
+      #output::-webkit-scrollbar { display: none; }
+      #output { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
   </head>
   <body>
@@ -195,7 +197,7 @@
           var t = document.getElementById('output');
           if (!t) return;
           var top = t.getBoundingClientRect().top;
-          var h = window.innerHeight - top - 10;
+          var h = window.innerHeight - top - 25;
           if (h > 50) t.style.height = h + 'px';
         });
         setTimeout(() => window.dispatchEvent(new Event('resize')), 500);

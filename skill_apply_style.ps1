@@ -34,6 +34,9 @@ $original = $content
 $content = $content -replace 'body\{font-family:arial;margin:0;padding:none\}',
     'body{font-family:arial;margin:0;padding:none;background-color:#111111;color:#fff}'
 
+# 1a2. Hide scrollbar on textarea
+$content = $content.Replace('</style>', '#output::-webkit-scrollbar{display:none}#output{-ms-overflow-style:none;scrollbar-width:none}</style>')
+
 # 1b. div.emscripten: add background color
 $content = $content -replace 'div\.emscripten\{text-align:center\}',
     'div.emscripten{text-align:center;background-color:#111111}'
@@ -79,7 +82,7 @@ $content = $content -replace ' rows=\d+', ''
 
 # 4b. Add auto-resize script before </body>
 $autoResizeJS = @'
-<script>window.addEventListener("DOMContentLoaded",()=>{window.addEventListener("resize",function e(){var t=document.getElementById("output");if(!t)return;var n=t.getBoundingClientRect().top,a=window.innerHeight-n-10;a>50&&(t.style.height=a+"px")}),setTimeout(()=>window.dispatchEvent(new Event("resize")),500)})</script>
+<script>window.addEventListener("DOMContentLoaded",()=>{window.addEventListener("resize",function e(){var t=document.getElementById("output");if(!t)return;var n=t.getBoundingClientRect().top,a=window.innerHeight-n-25;a>50&&(t.style.height=a+"px")}),setTimeout(()=>window.dispatchEvent(new Event("resize")),500)})</script>
 '@
 $content = $content.Replace('</body>', $autoResizeJS + '</body>')
 
