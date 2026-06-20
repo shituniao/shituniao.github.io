@@ -64,14 +64,25 @@ $content = $content -replace '<a href=http://emscripten\.org><img id=emscripten_
 $content = $content -replace '<span id=controls>.*?</span></span>', ''
 
 # ============================================================
-# 3. Insert custom header after <body>
+# 3. Insert custom header after <body> (only if not already present)
 # ============================================================
 
-$header = @"
+if ($content -notmatch '返回首页') {
+    $header = @"
 <div style="background:#111;padding:6px 10px 4px"><div style="text-align:center;font-size:20px;font-weight:bold;color:#ccc;font-family:Arial,sans-serif;padding-top:10px;padding-bottom:4px">$Title</div><div style="display:flex;justify-content:center;margin-top:10px"><a href="$BackHref" style="background:#333;color:#aaa;padding:4px 12px;text-decoration:none;font-family:Arial,sans-serif;font-size:13px">$BackLabel</a></div></div>
 "@
-
-$content = $content -replace '(<body>)', ('$1' + $header)
+    $content = $content -replace '(<body>)', ('$1' + $header)
+} else {
+    # Header exists, just update title
+    if ($content -match 'TITLE_PLACEHOLDER') {
+        $content = $content.Replace('TITLE_PLACEHOLDER', $Title)
+    } elseif ($content -match 'padding-bottom:4px[^>]*>([^<]+)</div>') {
+        $oldTitle = $Matches[1]
+        if ($oldTitle -ne $Title) {
+            $content = $content -replace ([regex]::Escape($oldTitle)), $Title
+        }
+    }
+}
 
 # ============================================================
 # 4. Remove rows attribute and add auto-resize JS
